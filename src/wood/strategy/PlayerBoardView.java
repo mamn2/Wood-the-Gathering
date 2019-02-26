@@ -98,4 +98,13 @@ public class PlayerBoardView {
     public int getCurrentTileValue() {
         return this.currentTileValue;
     }
+
+    public void setTileType(int x, int y, TileType tileType) {
+
+        if (x < tiles.length && y < tiles[0].length) {
+            tiles[x][y] = tileType;
+        }
+
+    }
+
 }

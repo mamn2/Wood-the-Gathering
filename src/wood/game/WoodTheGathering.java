@@ -1,5 +1,6 @@
 package wood.game;
 
+import wood.competition.IntelligentStrategy;
 import wood.graphics.UserInterface;
 import wood.replay.Replay;
 import wood.replay.ReplayIO;
@@ -18,7 +19,8 @@ public class WoodTheGathering {
         final GameEngine gameEngine;
 
         if(replayFilePath == null) {
-            WoodPlayerStrategy redStrategy =  new RandomStrategy();
+            //WoodPlayerStrategy redStrategy =  new RandomStrategy();
+            WoodPlayerStrategy redStrategy = new IntelligentStrategy();
             WoodPlayerStrategy blueStrategy = new RandomStrategy();
             gameEngine = new GameEngine(DEFAULT_BOARD_SIZE, redStrategy, blueStrategy);
             gameEngine.setGuiEnabled(guiEnabled);
