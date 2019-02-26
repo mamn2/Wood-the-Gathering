@@ -30,7 +30,6 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
     private int boardSize;
     private LinkedList<InventoryItem> inventoryItems;
     private int maxInventoryItems;
-    private boolean isRedPlayer;
     private boolean collectingSeeds;
     private boolean plantingSeeds;
     private boolean collectingTrees;
@@ -49,7 +48,6 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
 
         this.boardSize = boardSize;
         this.maxInventoryItems = maxInventorySize;
-        this.isRedPlayer = isRedPlayer;
         this.collectingSeeds = true;
         this.allActions = new LinkedList<>();
 
@@ -110,32 +108,6 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
 
     }
 
-    /**
-     * Helper function for getTurnAction. Allows strategy to think of its next best move.
-     * @param boardView is the current state of the board.
-     * @param tileType is the TileType you are searching for.
-     * @return the number of turns to reach that tile
-     */
-    public int shortestNumTurnsForTileType(PlayerBoardView boardView, TileType tileType) {
-
-        int shortestNumTurns = Integer.MAX_VALUE;
-
-        for (int x = 0; x < boardSize; x++) {
-            for (int y = 0; y < boardSize; y++) {
-                TileType currentTile = boardView.getTileTypeAtLocation(x, y);
-                if (currentTile == tileType) {
-                    int numTurns = (int) (Math.abs(boardView.getYourLocation().getX() - x) + Math.abs(boardView.getYourLocation().getY() - y));
-                    if (numTurns < shortestNumTurns) {
-                        shortestNumTurns = numTurns;
-                    }
-                }
-            }
-        }
-
-        return shortestNumTurns;
-
-    }
-
 
     public TurnAction moveInDirectionOfTileType(PlayerBoardView boardView, TileType tileType) {
 
@@ -155,7 +127,21 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
             }
         }
 
-        if (nearestTile.getX() < boardView.getYourLocation().getX()) {
+        if (nearestTile == null) {
+            if (tileType == TileType.TREE) {
+                goingHome = true;
+                collectingTrees = false;
+                collectingSeeds = false;
+                plantingSeeds = false;
+            } else if (tileType == TileType.SEED) {
+                plantingSeeds = true;
+                collectingSeeds = false;
+                collectingTrees = false;
+                goingHome = false;
+            } else {
+                return null;
+            }
+        } else if (nearestTile.getX() < boardView.getYourLocation().getX()) {
             boardView.getYourLocation().setLocation(boardView.getYourLocation().x - 1, boardView.getYourLocation().y);
             System.out.println("left");
             allActions.add(TurnAction.MOVE_LEFT);
@@ -180,18 +166,18 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
             System.out.println("planting seed");
             inventoryItems.removeFirst();
             return TurnAction.PLANT_SEED;
-        }
-        else {
+        } else if (tileType == TileType.TREE
+               && boardView.getTileTypeAtLocation(boardView.getYourLocation()) == TileType.TREE) {
+            System.out.println("cutting down");
+            return TurnAction.CUT_TREE;
+        } else if (tileType == TileType.SEED
+               && boardView.getTileTypeAtLocation(boardView.getYourLocation()) == TileType.SEED) {
             System.out.println("picking up");
-            if (tileType == TileType.TREE) {
-                receiveItem(new WoodItem(0));
-            } else if (tileType == TileType.SEED) {
-                receiveItem(new SeedItem(0));
-            }
-            //boardView.setTileType(currentLocation.x , currentLocation.y, TileType.EMPTY);
-            //allActions.add(TurnAction.PICK_UP);
             return TurnAction.PICK_UP;
         }
+
+        System.out.println("no action");
+        return null;
 
     }
 
