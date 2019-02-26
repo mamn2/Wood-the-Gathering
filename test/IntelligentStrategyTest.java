@@ -25,7 +25,6 @@ public class IntelligentStrategyTest {
     @BeforeClass
     public static void initializeStrategy() {
 
-        gameEngine = new GameEngine(10, new RandomStrategy(), new IntelligentStrategy());
         intelligentWoodStrategy.initialize(10, 5, 100,
                 new Point(0,0), false, new Random());
 
@@ -125,6 +124,28 @@ public class IntelligentStrategyTest {
         assertEquals(TurnAction.PICK_UP,
                 intelligentWoodStrategy.moveInDirectionOfTileType(playerBoardView, TileType.TREE));
 
+
+    }
+
+    @Test
+    public void testAISuperior() throws AssertionError {
+
+        int randomWins = 0;
+        int aiWins = 0;
+
+        for (int i = 0; i < 1000; i++ ) {
+            WoodPlayerStrategy redPlayerStrat = new RandomStrategy();
+            WoodPlayerStrategy bluePlayerStrat = new IntelligentStrategy();
+            gameEngine = new GameEngine(10, redPlayerStrat, bluePlayerStrat);
+            if (gameEngine.runGameLoop()) {
+                randomWins++;
+            } else {
+                aiWins++;
+            }
+        }
+
+        System.out.println(randomWins);
+        System.out.println(aiWins);
 
     }
 
