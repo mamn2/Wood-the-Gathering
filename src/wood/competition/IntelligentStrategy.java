@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.Random;
 // ^ These classes are a part of Java, they also do not need to be in the competition package
 
+
 /**
  * Because this class is in the competition package, it will be compiled and run in the competition.
  */
