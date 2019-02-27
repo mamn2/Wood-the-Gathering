@@ -108,7 +108,7 @@ public class GameEngine extends Observable {
      *
      * @return true if red player won, false if blue player won
      */
-    public boolean runGameLoop() {
+    public int runGameLoop() {
         initializePlayer(redPlayer, true);
         initializePlayer(bluePlayer, false);
 
@@ -149,7 +149,7 @@ public class GameEngine extends Observable {
         bluePlayer.getStrategy().endRound(bluePlayerScore, redPlayerScore);
         playerWhoThrewException = null;
 
-        return redPlayerScore > bluePlayerScore;
+        return bluePlayerScore;
     }
 
     private void initializePlayer(WoodPlayer playerToInitialize, boolean isRedPlayer) {

@@ -9,6 +9,7 @@ import wood.item.SeedItem;
 import wood.item.WoodItem;
 import wood.strategy.PlayerBoardView;
 import wood.strategy.WoodPlayerStrategy;
+import wood.tiles.Tile;
 import wood.tiles.TileType;
 import wood.tiles.TreeTile;
 // ^ These classes were provided to you, they do not need to be in the competition package
@@ -28,17 +29,12 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
     private int boardSize;
     private LinkedList<InventoryItem> inventoryItems;
     private int maxInventoryItems;
-    private boolean collectingSeeds;
-    private boolean plantingSeeds;
-    private boolean collectingTrees;
-    private boolean goingHome;
-    private boolean noTrees = false;
-    int numPlants = 0;
+
+    int numberOfTurns = 0;
 
     public IntelligentStrategy() {
 
         this.inventoryItems = new LinkedList<>();
-        this.collectingSeeds = true;
 
     }
 
@@ -54,94 +50,72 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
     @Override
     public TurnAction getTurnAction(PlayerBoardView boardView, boolean isRedTurn) {
 
-        if (goingHome) {
-            if (boardView.getTileTypeAtLocation(boardView.getYourLocation()) == TileType.START) {
-                LinkedList<InventoryItem> removeItems = new LinkedList<>();
-                for (InventoryItem item : inventoryItems) {
-                    if (item instanceof WoodItem) {
-                        removeItems.add(item);
-                    }
-                }
-                inventoryItems.removeAll(removeItems);
-                if (numPlants < 3) {
-                    goingHome = false;
-                    collectingSeeds = true;
-                    plantingSeeds = false;
-                    collectingTrees = false;
+
+        if (numberOfTurns < 500) {
+
+            if (inventoryItems.size() == 0) {
+                numberOfTurns++;
+                TurnAction action = moveInDirectionOfTileType(boardView, TileType.SEED);
+                if (action == null) {
+                    System.out.println("picking up");
+                    inventoryItems.add(new SeedItem(0));
+                    return TurnAction.PICK_UP;
                 } else {
-                    goingHome = false;
-                    collectingTrees = true;
-                    collectingSeeds = false;
-                    plantingSeeds = false;
+                    return action;
                 }
-                return getTurnAction(boardView, isRedTurn);
             } else {
-                //System.out.print("moving home");
-                return moveInDirectionOfTileType(boardView, TileType.START);
-            }
-        } else if (collectingSeeds) {
-            if (inventoryItems.size() == maxInventoryItems) {
-                collectingSeeds = false;
-                plantingSeeds = true;
-                collectingTrees = false;
-                goingHome = false;
-                return getTurnAction(boardView, isRedTurn);
-            } else {
-                //System.out.print("moving to seed ");
-                return moveInDirectionOfTileType(boardView, TileType.SEED);
-            }
-        } else if (plantingSeeds) {
-            boolean inventoryHasSeeds = false;
-            for (InventoryItem item : inventoryItems) {
-                if (item instanceof SeedItem) {
-                    inventoryHasSeeds = true;
+                numberOfTurns++;
+                TurnAction action = moveInDirectionOfTileType(boardView, TileType.EMPTY);
+                if (action == null) {
+                    System.out.println("planting seed");
+                    inventoryItems.removeFirst();
+                    return TurnAction.PLANT_SEED;
+                } else {
+                    return action;
                 }
             }
 
-            if (inventoryHasSeeds) {
-                //System.out.print("moving to empty tile ");
-                return moveInDirectionOfTileType(boardView, TileType.EMPTY);
-            } else {
-                if (inventoryItems.size() == maxInventoryItems) {
-                    plantingSeeds = false;
-                    collectingTrees = false;
-                    collectingSeeds = false;
-                    goingHome = true;
-                } else if (numPlants > 16) {
-                    plantingSeeds = false;
-                    collectingTrees = true;
-                    collectingSeeds = false;
-                    goingHome = false;
-                } else {
-                    collectingSeeds = true;
-                    plantingSeeds = false;
-                    collectingTrees = false;
-                    goingHome = false;
+        } else if (numberOfTurns == 500){
+
+            System.out.println("REACHED THRESHOLDojfowiejfoiwejfoiwjfoiwjfowejfowejfo;iwejf;oijfo;");
+
+            if (inventoryItems.size() > 0) {
+                TurnAction action = moveInDirectionOfTileType(boardView, TileType.EMPTY);
+                if (action == null) {
+                    inventoryItems.removeFirst();
+                    return TurnAction.PLANT_SEED;
                 }
-                return getTurnAction(boardView, isRedTurn);
-            }
-        } else if (collectingTrees) {
-            if (inventoryItems.size() == maxInventoryItems) {
-                collectingTrees = false;
-                goingHome = true;
-                collectingSeeds = false;
-                plantingSeeds = false;
-                return getTurnAction(boardView, isRedTurn);
             } else {
-                //System.out.print("moving to tree ");
-                if (noTrees) {
-                    collectingSeeds = true;
-                    plantingSeeds = false;
-                    goingHome = false;
-                    collectingTrees = false;
-                    return getTurnAction(boardView, isRedTurn);
+                numberOfTurns++;
+                return TurnAction.MOVE_DOWN;
+            }
+
+        } else {
+
+            numberOfTurns++;
+
+            if (inventoryItems.size() != maxInventoryItems) {
+                TurnAction action = moveInDirectionOfTileType(boardView, TileType.TREE);
+                if (action == null) {
+                    inventoryItems.add(new WoodItem(0));
+                    return TurnAction.CUT_TREE;
                 } else {
+                    return action;
+                }
+            } else {
+                TurnAction action = moveInDirectionOfTileType(boardView, TileType.START);
+                if (action == null) {
+                    inventoryItems = new LinkedList<>();
                     return moveInDirectionOfTileType(boardView, TileType.TREE);
+                } else {
+                    return action;
                 }
             }
+
         }
 
         return null;
+
 
     }
 
@@ -156,7 +130,7 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                 TileType currentTile = boardView.getTileTypeAtLocation(x, y);
                 if (currentTile == tileType) {
                     int numTurns = (int) (Math.abs(boardView.getYourLocation().getX() - x)
-                                        + Math.abs(boardView.getYourLocation().getY() - y));
+                            + Math.abs(boardView.getYourLocation().getY() - y));
                     if (numTurns < shortestNumTurns) {
                         shortestNumTurns = numTurns;
                         nearestTile = new Point(x, y);
@@ -166,68 +140,28 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
         }
 
         if (nearestTile == null) {
-            //System.out.println("OEJFOAHFILA HGILUSAHFLIUAEHFILHEAIUFHAEILHUFLIAEUHFLIAUEHFILUEHFLIAHELF");
-            if (tileType == TileType.TREE) {
-                goingHome = true;
-                collectingTrees = false;
-                collectingSeeds = false;
-                plantingSeeds = false;
-                noTrees = true;
-                return getTurnAction(boardView, true);
-            } else if (tileType == TileType.SEED) {
-                plantingSeeds = true;
-                collectingSeeds = false;
-                collectingTrees = false;
-                goingHome = false;
-                return getTurnAction(boardView, true);
-            } else {
-                return null;
-            }
+            System.out.println("NO SEEDS");
+            return null;
         } else if (nearestTile.getX() < boardView.getYourLocation().getX()) {
             boardView.getYourLocation().setLocation(boardView.getYourLocation().x - 1, boardView.getYourLocation().y);
-            //System.out.println("left");
+            System.out.println("left");
             return TurnAction.MOVE_LEFT;
         } else if (nearestTile.getX() > boardView.getYourLocation().getX()) {
             boardView.getYourLocation().setLocation(boardView.getYourLocation().x + 1, boardView.getYourLocation().y);
-            //System.out.println("right");
+            System.out.println("right");
             return TurnAction.MOVE_RIGHT;
         } else if (nearestTile.getY() < boardView.getYourLocation().getY()) {
             boardView.getYourLocation().setLocation(boardView.getYourLocation().x, boardView.getYourLocation().y - 1);
-            //System.out.println("Down");
             return TurnAction.MOVE_DOWN;
         } else if (nearestTile.getY() > boardView.getYourLocation().getY()) {
             boardView.getYourLocation().setLocation(boardView.getYourLocation().x, boardView.getYourLocation().y + 1);
-            //System.out.println("up");
             return TurnAction.MOVE_UP;
-        } else if (tileType == TileType.EMPTY
-                && boardView.getTileTypeAtLocation(boardView.getYourLocation()) == TileType.EMPTY) {
-            //System.out.println("planting seed");
-            for (InventoryItem item : inventoryItems) {
-                if (item instanceof SeedItem) {
-                    inventoryItems.remove(item);
-                    break;
-                }
-            }
-            numPlants++;
-            noTrees = false;
-            return TurnAction.PLANT_SEED;
-        } else if (tileType == TileType.TREE
-               && boardView.getTileTypeAtLocation(boardView.getYourLocation()) == TileType.TREE) {
-            //System.out.println("cutting down");
-            numPlants--;
-            return TurnAction.CUT_TREE;
-        } else if (tileType == TileType.SEED
-               && boardView.getTileTypeAtLocation(boardView.getYourLocation()) == TileType.SEED) {
-            //System.out.println("picking up");
-            inventoryItems.add(new SeedItem(0));
-            return TurnAction.PICK_UP;
+        } else {
+            return null;
         }
 
-        //System.out.println("no action");
-        return null;
 
     }
-
 
     @Override
     public void receiveItem(InventoryItem itemReceived) {
