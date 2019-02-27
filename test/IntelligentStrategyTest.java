@@ -1,5 +1,4 @@
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import wood.competition.IntelligentStrategy;
 import wood.game.GameEngine;
@@ -7,11 +6,9 @@ import wood.game.TurnAction;
 import wood.strategy.PlayerBoardView;
 import wood.strategy.RandomStrategy;
 import wood.strategy.WoodPlayerStrategy;
-import wood.tiles.Tile;
 import wood.tiles.TileType;
 
 import java.awt.*;
-import java.lang.invoke.VolatileCallSite;
 import java.util.Random;
 
 import static org.junit.Assert.*;
@@ -21,12 +18,13 @@ public class IntelligentStrategyTest {
     private static IntelligentStrategy intelligentWoodStrategy = new IntelligentStrategy();
     private static PlayerBoardView playerBoardView;
     private static GameEngine gameEngine;
+    private WoodPlayerStrategy redPlayerStrat = new RandomStrategy();
+    private WoodPlayerStrategy bluePlayerStrat = new IntelligentStrategy();
 
-    @BeforeClass
-    public static void initializeStrategy() {
+    @Before
+    public void initializeGame() {
 
-        intelligentWoodStrategy.initialize(30, 5, 100,
-                new Point(0,0), false, new Random());
+        gameEngine = new GameEngine(20, redPlayerStrat, bluePlayerStrat);
 
     }
 
@@ -61,39 +59,77 @@ public class IntelligentStrategyTest {
         assertEquals(TurnAction.MOVE_UP,
                 intelligentWoodStrategy.moveInDirectionOfTileType(playerBoardView, TileType.TREE));
 
-        assertEquals(TurnAction.PICK_UP,
-                intelligentWoodStrategy.moveInDirectionOfTileType(playerBoardView, TileType.TREE));
+        assertNull(intelligentWoodStrategy.moveInDirectionOfTileType(playerBoardView, TileType.TREE));
 
 
     }
 
     @Test
-    public void testAISuperior() throws AssertionError {
+    public void testAISuperiorSize10() throws AssertionError {
 
-        int randomWins = 0;
-        int aiWins = 0;
         int pointWins = 0;
 
         for (int i = 0; i < 1000; i++ ) {
-            WoodPlayerStrategy redPlayerStrat = new RandomStrategy();
-            WoodPlayerStrategy bluePlayerStrat = new IntelligentStrategy();
-            gameEngine = new GameEngine(30, redPlayerStrat, bluePlayerStrat);
 
-            //runGameLoop returns true if the winner is red
+            intelligentWoodStrategy.initialize(10, 5, 2000,
+                    new Point(0,0), false, new Random());
+
+
+            //runGameLoop returns score of intelligent strategy
             if (gameEngine.runGameLoop() > 2000) {
                 pointWins++;
-            } else {
-                //aiWins++;
             }
+
         }
 
-        double winPercentage = 1.00 - (randomWins * .0005);
+        System.out.println("EINSTEIN WINS " + pointWins + "/1000");
+        assertTrue((double) pointWins / 1000.0 > .99);
 
-        System.out.println("EINSTEIN WINS: " + aiWins);
-        System.out.println("RANDOM STRATEGY WINS: " + randomWins);
+    }
 
-        System.out.println("EINSTEINWINSBYPOINTS: ." + pointWins);
-        //assertTrue(winPercentage > .99);
+    @Test
+    public void testAISuperiorSize20() throws AssertionError {
+
+        int pointWins = 0;
+
+        for (int i = 0; i < 1000; i++ ) {
+
+            intelligentWoodStrategy.initialize(20, 5, 2000,
+                    new Point(0,0), false, new Random());
+
+
+            //runGameLoop returns score of intelligent strategy
+            if (gameEngine.runGameLoop() > 2000) {
+                pointWins++;
+            }
+
+        }
+
+        System.out.println("EINSTEIN WINS " + pointWins + "/1000");
+        assertTrue((double) pointWins / 1000.0 > .99);
+
+    }
+
+    @Test
+    public void testAISuperiorSize30() throws AssertionError {
+
+        int pointWins = 0;
+
+        for (int i = 0; i < 1000; i++ ) {
+
+            intelligentWoodStrategy.initialize(30, 5, 2000,
+                    new Point(0,0), false, new Random());
+
+
+            //runGameLoop returns score of intelligent strategy
+            if (gameEngine.runGameLoop() > 2000) {
+                pointWins++;
+            }
+
+        }
+
+        System.out.println("EINSTEIN WINS " + pointWins + "/1000");
+        assertTrue((double) pointWins / 1000.0 > .99);
 
     }
 
