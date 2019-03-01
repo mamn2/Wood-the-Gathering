@@ -71,12 +71,13 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
 
             if (boardView.getTileTypeAtLocation(boardView.getYourLocation()) == TileType.TREE
                     && boardView.getCurrentTileValue() > 100) {
+
                 numberOfTurns++;
                 inventoryItems.addFirst(new WoodItem(0));
                 return TurnAction.CUT_TREE;
-            }
 
-            if (inventoryItems.size() == 0) {
+            } else if (inventoryItems.size() == 0) {
+
                 numberOfTurns++;
                 TurnAction action = moveInDirectionOfTileType(boardView, TileType.SEED);
                 if (action == null) {
@@ -85,6 +86,7 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                 } else {
                     return action;
                 }
+
             } else {
 
                 if (inventoryItems.getFirst() instanceof WoodItem) {
@@ -92,6 +94,7 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                     TurnAction action = moveInDirectionOfTileType(boardView, TileType.START);
                     LinkedList<InventoryItem> removeItems = new LinkedList<>();
                     if (action == null) {
+
                         for (InventoryItem item : inventoryItems) {
                             if (item instanceof WoodItem) {
                                 removeItems.add(item);
@@ -99,9 +102,11 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                         }
                         inventoryItems.removeAll(removeItems);
                         return moveInDirectionOfTileType(boardView, TileType.SEED);
+
                     } else {
                         return action;
                     }
+
                 } else {
 
                     numberOfTurns++;
@@ -112,6 +117,7 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                     } else {
                         return action;
                     }
+
                 }
             }
 
@@ -127,6 +133,7 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                 }
 
                 if (inventoryContainsWood) {
+
                     TurnAction action = moveInDirectionOfTileType(boardView, TileType.START);
                     if (action == null) {
                         LinkedList<InventoryItem> removeItems = new LinkedList<>();
@@ -140,6 +147,7 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                     } else {
                         return action;
                     }
+
                 } else {
 
                     TurnAction action = moveInDirectionOfTileType(boardView, TileType.EMPTY);
@@ -148,6 +156,7 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
                         return TurnAction.PLANT_SEED;
                     }
                     return action;
+
                 }
             } else {
                 numberOfTurns++;
@@ -223,7 +232,6 @@ public class IntelligentStrategy implements WoodPlayerStrategy {
             //returns null if you are currently standing on the tile.
             return null;
         }
-
 
     }
 
